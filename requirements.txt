@@ -1,0 +1,5 @@
+pandas>=2.2
+numpy
+openpyxl
+python-calamine
+gdown>=6.4,<7

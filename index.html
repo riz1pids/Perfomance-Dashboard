@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shwapno Overall Performance</title>
+<style>
+:root{
+  --ink:#15212e; --ink-2:#22394f; --paper:#eff2f6; --card:#ffffff;
+  --line:#d5dde6; --line-soft:#e7ecf2; --text:#1d2a37; --muted:#6a7b8c;
+  --up:#0f7a55; --down:#b3261e; --sel:#1f5fbf; --sel-soft:#e7f0ff;
+  --warn:#8a5a00; --warn-soft:#fff6e0;
+  --row:#f7f9fb; --head:#eaeff5;
+  --sidew:270px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--paper); color:var(--text);
+  font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+
+/* ---------- top bar ---------- */
+.bar{
+  position:sticky; top:0; z-index:40; background:var(--ink); color:#eef3f8;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  padding:9px 14px; border-bottom:1px solid #0b1320;
+}
+.bar h1{font-size:15px; font-weight:600; margin:0; letter-spacing:.2px}
+.bar h1 span{color:#9ab2c9; font-weight:400}
+.bar .grp{display:flex; align-items:center; gap:6px}
+.bar label{color:#9ab2c9; font-size:11.5px}
+.bar input[type=date]{
+  background:#0f1a26; border:1px solid #2b445d; color:#e8eef5;
+  border-radius:4px; padding:3px 6px;
+}
+.seg{display:flex; border:1px solid #2b445d; border-radius:5px; overflow:hidden}
+.seg button{
+  background:#0f1a26; color:#b9cadb; border:0; padding:4px 11px; font-size:12px;
+}
+.seg button+button{border-left:1px solid #2b445d}
+.seg button.on{background:#e8eef5; color:#15212e; font-weight:600}
+.bar .built{margin-left:auto; color:#7e94aa; font-size:11px}
+
+/* ---------- shell ---------- */
+.shell{display:flex; align-items:flex-start; min-height:calc(100vh - 44px)}
+aside{
+  width:var(--sidew); flex:0 0 var(--sidew); background:var(--card);
+  border-right:1px solid var(--line); padding:12px 12px 40px;
+  position:sticky; top:44px; max-height:calc(100vh - 44px); overflow:auto;
+}
+aside.hide{display:none}
+.grip{
+  flex:0 0 5px; align-self:stretch; cursor:col-resize; background:transparent;
+  position:sticky; top:44px; height:calc(100vh - 44px);
+}
+.grip:hover{background:#c6d3e0}
+main{flex:1; min-width:0; padding:14px 16px 60px}
+
+.fgroup{margin-bottom:14px}
+.fgroup h3{
+  margin:0 0 7px; font-size:11.5px; font-weight:700; color:var(--muted);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.fgroup h3 button{
+  background:none;border:0;color:var(--sel);font-size:11.5px;padding:0;
+}
+.f{margin-bottom:7px}
+.f label{display:block; font-size:11px; color:var(--muted); margin-bottom:2px}
+.f select,.f input[type=text]{
+  width:100%; padding:4px 6px; border:1px solid var(--line);
+  border-radius:4px; background:#fff;
+}
+.f select.set,.f input.set{border-color:var(--sel); background:var(--sel-soft)}
+.chip{
+  display:inline-flex; align-items:center; gap:5px; background:var(--sel-soft);
+  border:1px solid #bcd3f5; color:#17457f; border-radius:11px;
+  padding:1px 7px; font-size:11px; margin:0 4px 4px 0;
+}
+.chip button{background:none;border:0;color:#17457f;padding:0;line-height:1}
+
+/* ---------- cards ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr)); gap:10px}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:7px;
+  padding:10px 12px; min-height:92px;
+}
+.card .k{font-size:11.5px; color:var(--muted); margin-bottom:4px}
+.card .v{font-size:23px; font-weight:650; letter-spacing:-.4px; line-height:1.15}
+.card .sub{font-size:11.5px; color:var(--muted); margin-top:5px}
+.card .sub b{color:var(--text); font-weight:600}
+.up{color:var(--up)} .down{color:var(--down)}
+.card.tgt .v{font-size:20px}
+
+/* ---------- panels ---------- */
+.panel{
+  background:var(--card); border:1px solid var(--line); border-radius:7px;
+  margin-top:12px;
+}
+.panel>header{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:8px 10px; border-bottom:1px solid var(--line-soft);
+}
+.panel>header h2{font-size:13px; margin:0; font-weight:650}
+.tabs{display:flex; flex-wrap:wrap; gap:4px}
+.tabs button{
+  border:1px solid var(--line); background:#fff; border-radius:5px;
+  padding:3px 9px; font-size:12px; color:var(--ink-2);
+}
+.tabs button.on{background:var(--ink); border-color:var(--ink); color:#fff}
+.tabs button:disabled{opacity:.38; cursor:not-allowed}
+.tools{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:auto}
+.tools select,.tools input[type=text]{
+  border:1px solid var(--line); border-radius:4px; padding:3px 6px; background:#fff;
+}
+.tools label{font-size:11.5px; color:var(--muted); display:flex; gap:4px; align-items:center}
+.btn{
+  border:1px solid var(--line); background:#fff; border-radius:5px;
+  padding:3px 9px; font-size:12px;
+}
+.btn:hover{background:var(--row)}
+
+.note{padding:7px 10px; font-size:12px; color:var(--warn); background:var(--warn-soft);
+  border-bottom:1px solid #f0e0b8}
+.strip{
+  display:flex; gap:22px; flex-wrap:wrap; padding:8px 10px; font-size:12px;
+  color:var(--muted); border-bottom:1px solid var(--line-soft);
+}
+.strip b{color:var(--text)}
+
+/* ---------- tables ---------- */
+.tw{overflow:auto; position:relative; resize:vertical; min-height:150px}
+table{border-collapse:separate; border-spacing:0; table-layout:fixed; width:max-content; min-width:100%}
+th,td{
+  padding:4px 8px; border-bottom:1px solid var(--line-soft); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis;
+}
+thead th{
+  position:sticky; top:0; z-index:3; background:var(--head); font-size:11.5px;
+  font-weight:650; text-align:right; border-bottom:1px solid var(--line);
+  user-select:none;
+}
+thead th.lbl{text-align:left}
+th .sortbtn{background:none;border:0;padding:0;font:inherit;color:inherit;width:100%;
+  text-align:inherit; display:block}
+th .x{
+  position:absolute; top:2px; right:2px; background:none; border:0; color:#8ea0b3;
+  font-size:11px; line-height:1; padding:1px 2px; display:none;
+}
+th:hover .x{display:block}
+th .rs{position:absolute; top:0; right:0; width:5px; height:100%; cursor:col-resize}
+th{position:sticky; position:-webkit-sticky}
+td{text-align:right}
+td.lbl{text-align:left}
+tbody tr:nth-child(even){background:var(--row)}
+tbody tr:hover{background:#eef4fb}
+td.lbl span.clk{cursor:pointer; border-bottom:1px dotted #9db2c7}
+td.lbl span.clk:hover{color:var(--sel); border-bottom-color:var(--sel)}
+tr.sub{background:#e9eef4 !important; font-weight:650}
+tr.tot td{background:#dde5ee !important; font-weight:700; border-top:1px solid #c3cfdc}
+tfoot td{position:sticky; bottom:0; z-index:2}
+.froz{position:sticky; left:0; z-index:2; background:inherit}
+thead th.froz{z-index:4; background:var(--head)}
+tbody tr:nth-child(even) .froz{background:var(--row)}
+tbody tr:nth-child(odd) .froz{background:#fff}
+tbody tr:hover .froz{background:#eef4fb}
+tr.sub .froz{background:#e9eef4}
+tr.tot .froz{background:#dde5ee}
+.err{padding:14px; color:var(--down); font-size:12.5px}
+.empty{padding:20px; color:var(--muted); text-align:center}
+
+/* ---------- chart ---------- */
+.chart{padding:8px 10px 2px}
+.chart svg{width:100%; height:300px; display:block}
+.legend{display:flex; gap:12px; flex-wrap:wrap; padding:2px 10px 9px; font-size:11.5px}
+.legend button{
+  background:none; border:0; display:flex; align-items:center; gap:5px;
+  color:var(--text); padding:0;
+}
+.legend button.off{opacity:.35; text-decoration:line-through}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block}
+.gridline{stroke:#e6ebf1}
+.axis{stroke:#c3cfdc}
+.tick{fill:#8494a5; font-size:10.5px}
+.dlabel{font-size:10px; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round}
+
+/* ---------- boot ---------- */
+#boot{padding:40px; text-align:center; color:var(--muted)}
+#boot .bad{color:var(--down); text-align:left; max-width:760px; margin:0 auto;
+  background:#fff; border:1px solid var(--line); border-radius:7px; padding:16px}
+code{background:#eef2f7; padding:1px 4px; border-radius:3px; font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>Shwapno performance <span id="periodLbl"></span></h1>
+  <div class="grp" id="monthBtns"></div>
+  <div class="grp">
+    <label for="dFrom">From</label><input type="date" id="dFrom">
+    <label for="dTo">To</label><input type="date" id="dTo">
+    <button class="btn" id="dFull" style="background:#0f1a26;border-color:#2b445d;color:#cfe0f0">Full period</button>
+    <button class="btn" id="dLast" style="background:#0f1a26;border-color:#2b445d;color:#cfe0f0">Latest day</button>
+  </div>
+  <div class="seg" id="scopeSeg">
+    <button data-scope="same" class="on">Same store</button>
+    <button data-scope="all">All store</button>
+  </div>
+  <div class="built" id="builtLbl"></div>
+</div>
+
+<div id="boot">Loading data…</div>
+
+<div class="shell" id="shell" hidden>
+  <aside id="side">
+    <div class="fgroup">
+      <h3>Product filters <button id="clearProd">clear</button></h3>
+      <div id="prodChips"></div>
+      <div class="f"><label for="fDiv">Article division</label><select id="fDiv"></select></div>
+      <div class="f"><label for="fCat1">Category 1</label><select id="fCat1"></select></div>
+      <div class="f"><label for="fCat3">Category 3</label><select id="fCat3"></select></div>
+      <div class="f"><label for="fBrand">Brand</label><select id="fBrand"></select></div>
+      <div class="f"><label for="fHead">Head</label><select id="fHead"></select></div>
+      <div class="f"><label for="fCrp">Responsible person</label><select id="fCrp"></select></div>
+      <div class="f"><label for="fSku">Article search</label><input type="text" id="fSku" placeholder="name or code"></div>
+    </div>
+    <div class="fgroup">
+      <h3>Outlet filters <button id="clearOut">clear</button></h3>
+      <div id="outChips"></div>
+      <div class="f"><label for="oFormat">Format</label><select id="oFormat"></select></div>
+      <div class="f"><label for="oDiv">Outlet division</label><select id="oDiv"></select></div>
+      <div class="f"><label for="oArea">Area</label><select id="oArea"></select></div>
+      <div class="f"><label for="oZone">Zone</label><select id="oZone"></select></div>
+      <div class="f"><label for="oCluster">Cluster</label><select id="oCluster"></select></div>
+      <div class="f"><label for="oLeader">Leader</label><select id="oLeader"></select></div>
+      <div class="f"><label for="oZonal">Zonal</label><select id="oZonal"></select></div>
+      <div class="f"><label for="oResult">Result</label><select id="oResult">
+        <option value="">All outlets</option>
+        <option value="down">Sales in degrowth</option>
+        <option value="up">Sales in growth</option>
+      </select></div>
+      <div class="f"><label for="oSearch">Outlet search</label><input type="text" id="oSearch" placeholder="name or code"></div>
+    </div>
+    <div class="fgroup">
+      <h3>View</h3>
+      <div class="f"><label><input type="checkbox" id="top90"> Top 90% of Category 3 only</label></div>
+      <div class="f"><button class="btn" id="sideCollapse">Collapse sidebar</button></div>
+      <div class="f"><button class="btn" id="sideReset">Reset width</button></div>
+    </div>
+  </aside>
+  <div class="grip" id="grip"></div>
+
+  <main>
+    <div class="cards" id="cards"></div>
+
+    <section class="panel">
+      <header>
+        <h2>Growth</h2>
+        <div class="tools">
+          <div class="seg" style="border-color:var(--line)">
+            <button data-cm="day" class="on" style="background:#fff;color:var(--ink-2)">Day wise</button>
+            <button data-cm="cum" style="background:#fff;color:var(--ink-2)">Cumulative</button>
+          </div>
+          <label><input type="checkbox" id="dlab" checked> Data labels</label>
+        </div>
+      </header>
+      <div class="chart" id="chartWrap"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="panel" id="catPanel">
+      <header>
+        <h2>Breakdown</h2>
+        <div class="tabs" id="catTabs"></div>
+        <div class="tools">
+          <label>Subtotal <select id="catSub"></select></label>
+          <button class="btn" id="catCols">Show all columns</button>
+          <button class="btn" id="catCsv">Export CSV</button>
+        </div>
+      </header>
+      <div class="strip" id="strip"></div>
+      <div id="catNote"></div>
+      <div class="tw" id="catWrap" style="height:420px"></div>
+    </section>
+
+    <section class="panel" id="outPanel">
+      <header>
+        <h2>Outlet detail</h2>
+        <div class="tools">
+          <label>Subtotal <select id="outSub"></select></label>
+          <button class="btn" id="outCols">Show all columns</button>
+          <button class="btn" id="outCsv">Export CSV</button>
+        </div>
+      </header>
+      <div id="outNote"></div>
+      <div class="tw" id="outWrap" style="height:420px"></div>
+    </section>
+  </main>
+</div>
+
+<script src="data/manifest.js"></script>
+<script>
+/* =====================================================================
+   Shwapno Overall Performance Dashboard
+   Single page. Reads the .js payloads written by build_dashboard_data.py.
+   ===================================================================== */
+'use strict';
+
+/* The month list comes from data/manifest.js, which build_dashboard_data.py
+   rewrites on every run. */
+var MAN = window.SHWAPNO_MANIFEST || { months: [] };
+var MONTHS = (MAN.months || []).map(function (m) {
+  return { key: m.id, label: m.label, built: m.built, files: m.files || [] };
+});
+var M = null;            // meta of the loaded month
+var OUT = null;          // day x outlet x cat3 fact table
+var SKU = null;          // day x sku x scope fact table
+var TGT = null;          // day x cat targets
+var BUF = {};            // incoming payload parts
+var SEP = '\u0001';
+
+window.SHW_PUSH = function (o) { (BUF[o.n] = BUF[o.n] || [])[o.p] = o.v; };
+
+/* ---------- small helpers ---------- */
+var $ = function (id) { return document.getElementById(id); };
+function el(tag, cls, txt) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (txt != null) e.textContent = txt;
+  return e;
+}
+function money(v) { return Math.round(v / M.moneyScale).toLocaleString('en-US'); }
+function qty(v) { return Math.round(v / M.qtyScale).toLocaleString('en-US'); }
+function num(v) { return Math.round(v).toLocaleString('en-US'); }
+function pct(v, dp) { return (v == null || !isFinite(v)) ? '-' : v.toFixed(dp == null ? 2 : dp) + '%'; }
+function growth(ty, ly) { return ly ? (ty / ly - 1) * 100 : (ty ? null : null); }
+function cls(v) { return v == null ? '' : (v < 0 ? 'down' : (v > 0 ? 'up' : '')); }
+function esc(s) { return String(s == null ? '' : s); }
+
+function loadScript(src) {
+  return new Promise(function (res, rej) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = res;
+    s.onerror = function () { rej(new Error('Could not load ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+
+async function inflate(b64) {
+  var bin = atob(b64), n = bin.length, u8 = new Uint8Array(n);
+  for (var i = 0; i < n; i++) u8[i] = bin.charCodeAt(i);
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('This browser cannot unpack the data files. Use a current '
+      + 'Chrome, Edge or Firefox.');
+  }
+  var stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
+
+/* ---------- payload assembly ----------
+   Each data file pushes {m: month, n: payload, p: part, of: parts, v: value}
+   into window.SHWAPNO_REG. Parts are put back in order here. */
+function regTake(key) {
+  var reg = window.SHWAPNO_REG || [], by = {}, keep = [];
+  reg.forEach(function (e) {
+    if (e.m !== key) { keep.push(e); return; }
+    (by[e.n] = by[e.n] || [])[e.p] = e.v;
+  });
+  window.SHWAPNO_REG = keep;          // release this month's raw text
+  return by;
+}
+function joinParts(list) {
+  if (!list || !list[0]) return null;
+  var out = list[0];
+  for (var i = 1; i < list.length; i++) {
+    var d = list[i] && list[i].data;
+    if (!d) continue;
+    for (var sc in d) {
+      if (!out.data[sc]) out.data[sc] = [];
+      var src = d[sc], dst = out.data[sc];
+      for (var j = 0; j < src.length; j++) dst.push(src[j]);
+    }
+  }
+  return out;
+}
+
+/* outlet_cat3: 8 int32 columns, then u16 outlet, u16 category, u8 day,
+   little-endian, gzip + base64, one block per file part. */
+async function decodeOutlet(parts) {
+  var head = parts[0], chunks = [], p, c;
+  for (p = 1; p < parts.length; p++) if (parts[p] && parts[p].chunk) chunks.push(parts[p].chunk);
+  var total = 0;
+  chunks.forEach(function (ch) { total += ch.rows; });
+  var F = { n: total, col: [], o: new Uint16Array(total), c: new Uint16Array(total),
+            d: new Uint8Array(total) };
+  for (c = 0; c < 8; c++) F.col.push(new Int32Array(total));
+  var at = 0;
+  for (var k = 0; k < chunks.length; k++) {
+    boot('Unpacking outlet data ' + (k + 1) + ' of ' + chunks.length + '…');
+    var ch = chunks[k], buf = await inflate(ch.b64), n = ch.rows, off = 0;
+    ch.b64 = null;
+    for (c = 0; c < 8; c++) { F.col[c].set(new Int32Array(buf, off, n), at); off += n * 4; }
+    F.o.set(new Uint16Array(buf, off, n), at); off += n * 2;
+    F.c.set(new Uint16Array(buf, off, n), at); off += n * 2;
+    F.d.set(new Uint8Array(buf, off, n), at);
+    at += n;
+  }
+  for (var i = 0; i < total; i++) F.d[i] -= 1;     // builder days are 1-based
+  return { F: F, head: head };
+}
+
+/* ---------- month loading ---------- */
+var ART = null;          // article period totals (sku payload)
+async function loadMonth(key) {
+  var entry = MONTHS.filter(function (m) { return m.key === key; })[0];
+  if (!entry) throw new Error('Month ' + key + ' is not listed in data/manifest.js.');
+  window.SHWAPNO_REG = [];
+  var v = '?v=' + encodeURIComponent(entry.built || '');
+  for (var i = 0; i < entry.files.length; i++) {
+    boot('Loading ' + (i + 1) + ' of ' + entry.files.length + ' data files…');
+    await loadScript('data/' + entry.files[i] + v);
+  }
+  var by = regTake(key);
+  var meta = joinParts(by.meta), cat = joinParts(by.daily_cat),
+      tgt = joinParts(by.daily_target), sku = joinParts(by.sku);
+  if (!meta) throw new Error('meta.js for ' + key + ' did not load.');
+  if (!cat) throw new Error('daily_cat.js for ' + key + ' did not load.');
+  if (!sku) throw new Error('sku.js for ' + key + ' did not load.');
+  if (!by.outlet_cat3 || !by.outlet_cat3[0]) {
+    throw new Error('outlet_cat3 for ' + key + ' did not load. Re-run the builder.');
+  }
+  var oc = await decodeOutlet(by.outlet_cat3);
+  by = null;
+  boot('Preparing…');
+  adapt(key, entry, meta, cat, tgt, sku, oc);
+  prepareMeta();
+}
+
+/* Turn the builder's payloads into the shapes the rest of the page reads.
+   Money and quantity are held in thousandths, as in the outlet payload, so
+   one money() and one qty() serve every view. */
+function adapt(key, entry, meta, cat, tgt, sku, oc) {
+  var UN = 'UNASSIGNED', i, c;
+  var cats = oc.head.cats.slice(), catIx = {};
+  cats.forEach(function (x, j) { catIx[x] = j; });
+  function cidx(d, c1, c3) {
+    var k = d + SEP + c1 + SEP + c3;
+    if (catIx[k] === undefined) { catIx[k] = cats.length; cats.push(k); }
+    return catIx[k];
+  }
+  function ix(arr, map, v) {
+    v = (v == null || v === '') ? UN : String(v);
+    if (map[v] === undefined) { map[v] = arr.length; arr.push(v); }
+    return map[v];
+  }
+  var crps = [], crpIx = {}, heads = [], headIx = {}, catCrp = [], catHead = [];
+  function owner(ci, crp, head) {
+    if (catCrp[ci] !== undefined) return;
+    catCrp[ci] = ix(crps, crpIx, crp);
+    catHead[ci] = ix(heads, headIx, head);
+  }
+
+  /* One "sku" per daily_cat key: division x cat1 x cat3 x brand x person.
+     That keeps brand, category and person views day-wise. */
+  var brands = [], brandIx = {}, skus = [], skuByPath = {};
+  cat.key_rows.forEach(function (r, j) {
+    var ci = cidx(r[0], r[1], r[2]);
+    owner(ci, r[4], r[5]);
+    skus.push(['', '', ci, ix(brands, brandIx, r[3])]);
+    skuByPath[r[0] + SEP + r[1] + SEP + r[2] + SEP + r[3]] = j;
+  });
+  var SCL = [1000, 1000, 1000, 1000, 1, 1, 1000, 1000];
+  var all = cat.data.all || [], same = cat.data.same || [], N = all.length + same.length;
+  var F = { n: N, col: [], s: new Uint32Array(N), d: new Uint8Array(N), sc: new Uint8Array(N) };
+  for (c = 0; c < 8; c++) F.col.push(new Float64Array(N));
+  var at = 0;
+  [[all, 0], [same, 1]].forEach(function (pr) {
+    var rows = pr[0];
+    for (var r = 0; r < rows.length; r++, at++) {
+      var row = rows[r];
+      F.s[at] = row[0]; F.d[at] = row[1] - 1; F.sc[at] = pr[1];
+      for (c = 0; c < 8; c++) F.col[c][at] = Math.round((row[2 + c] || 0) * SCL[c]);
+    }
+  });
+
+  /* Targets: chain-wide, day x category 3. */
+  var trows = [];
+  if (tgt) {
+    var tcat = tgt.key_rows.map(function (r) {
+      var ci = cidx(r[0], r[1], r[2]);
+      owner(ci, r[3], r[4]);
+      return ci;
+    });
+    var tsrc = (tgt.data.all && tgt.data.all.length) ? tgt.data.all : (tgt.data.same || []);
+    tsrc.forEach(function (r) {
+      trows.push([r[1] - 1, tcat[r[0]], (r[2] || 0) * 1000, (r[3] || 0) * 1000]);
+    });
+  }
+
+  /* Articles: whole-period totals per scope. */
+  var SI = {};
+  sku.schema.forEach(function (nm, j) { SI[nm] = j; });
+  var A = { n: 0, code: [], name: [], cat: [], brand: [], pseudo: [], v: {} }, aIx = {};
+  function artId(r) {
+    var path = r[SI.division] + SEP + r[SI.cat1] + SEP + r[SI.cat3] + SEP + r[SI.brand];
+    var k = path + SEP + r[SI.code];
+    if (aIx[k] === undefined) {
+      aIx[k] = A.n++;
+      A.code.push(String(r[SI.code]));
+      A.name.push(r[SI.name] == null ? '' : String(r[SI.name]));
+      A.cat.push(cidx(r[SI.division], r[SI.cat1], r[SI.cat3]));
+      A.brand.push(ix(brands, brandIx, r[SI.brand]));
+      A.pseudo.push(skuByPath[path] === undefined ? -1 : skuByPath[path]);
+    }
+    return aIx[k];
+  }
+  var tmp = {};
+  ['all', 'same'].forEach(function (sc) {
+    tmp[sc] = (sku.data[sc] || []).map(function (r) { return [artId(r), r]; });
+  });
+  var FIELDS = ['sales_ty', 'sales_ly', 'gpv_ty', 'gpv_ly', 'ff_ty', 'ff_ly', 'qty_ty', 'qty_ly'];
+  ['all', 'same'].forEach(function (sc) {
+    var a = new Float64Array(A.n * 8);
+    tmp[sc].forEach(function (x) {
+      var b = x[0] * 8, r = x[1];
+      for (c = 0; c < 8; c++) a[b + c] += Math.round((r[SI[FIELDS[c]]] || 0) * SCL[c]);
+    });
+    A.v[sc] = a;
+  });
+
+  for (i = 0; i < cats.length; i++) owner(i, UN, UN);
+
+  M = {
+    month: key, label: entry.label || meta.period_label,
+    built: entry.built || meta.generated_at,
+    days: meta.days.map(function (d) {
+      return { d: d.ty, n: d.day, dow: d.dow, label: d.label, sply: d.sply_label };
+    }),
+    cats: cats, catCrp: catCrp, catHead: catHead, crps: crps, heads: heads,
+    brands: brands, skus: skus, outlets: oc.head.outlets,
+    moneyScale: 1000, qtyScale: 1000,
+    targetScope: meta.target_scope || 'ALLSTORE_ONLY'
+  };
+  OUT = oc.F; SKU = F; TGT = trows; ART = A;
+}
+
+/* Article views read whole-period totals. */
+function fullRange() { return S.from === 0 && S.to === M.days.length - 1; }
+function articleMatch(i, q) {
+  return ART.name[i].toLowerCase().indexOf(q) >= 0 || ART.code[i].toLowerCase().indexOf(q) >= 0;
+}
+
+/* ---------- derived meta ---------- */
+var CAT = null, SK = null, OUTL = null;
+function prepareMeta() {
+  var i;
+  CAT = { div: [], cat1: [], cat3: [], crp: M.catCrp, head: M.catHead, n: M.cats.length };
+  for (i = 0; i < M.cats.length; i++) {
+    var p = M.cats[i].split(SEP);
+    CAT.div.push(p[0]); CAT.cat1.push(p[1]); CAT.cat3.push(p[2]);
+  }
+  SK = {
+    n: M.skus.length, code: [], name: [],
+    cat: new Int32Array(M.skus.length), brand: new Int32Array(M.skus.length)
+  };
+  for (i = 0; i < M.skus.length; i++) {
+    SK.code.push(M.skus[i][0]); SK.name.push(M.skus[i][1]);
+    SK.cat[i] = M.skus[i][2]; SK.brand[i] = M.skus[i][3];
+  }
+  OUTL = { n: M.outlets.length, r: M.outlets, ss: new Uint8Array(M.outlets.length) };
+  for (i = 0; i < M.outlets.length; i++) OUTL.ss[i] = M.outlets[i][9];
+  // outlet attribute index: 0 code 1 name 2 format 3 odiv 4 zone 5 cluster
+  //                         6 leader 7 zonal 8 area 9 ss
+}
+
+/* ---------- state ---------- */
+var S = {
+  month: null, from: 0, to: 0, scope: 'same',
+  pf: { div: '', cat1: '', cat3: '', brand: '', head: '', crp: '', q: '' },
+  of: { format: '', odiv: '', area: '', zone: '', cluster: '', leader: '', zonal: '', result: '', q: '' },
+  tab: 'div', chartMode: 'day', labels: true, top90: false,
+  cat: { sort: null, hidden: {}, sub: '', width: {} },
+  out: { sort: null, hidden: {}, sub: '', width: {} }
+};
+function outletFiltered() {
+  var o = S.of;
+  return !!(o.format || o.odiv || o.area || o.zone || o.cluster || o.leader ||
+            o.zonal || o.result || o.q);
+}
+function skuLevelFilter() { return !!(S.pf.brand || S.pf.q); }
+
+/* ---------- masks ---------- */
+function catMask() {
+  var m = new Uint8Array(CAT.n), f = S.pf, i;
+  for (i = 0; i < CAT.n; i++) {
+    if (f.div && CAT.div[i] !== f.div) continue;
+    if (f.cat1 && CAT.cat1[i] !== f.cat1) continue;
+    if (f.cat3 && CAT.cat3[i] !== f.cat3) continue;
+    if (f.crp && M.crps[CAT.crp[i]] !== f.crp) continue;
+    if (f.head && M.heads[CAT.head[i]] !== f.head) continue;
+    m[i] = 1;
+  }
+  return m;
+}
+function skuMask(cm) {
+  var m = new Uint8Array(SK.n), f = S.pf, q = f.q.trim().toLowerCase(), i;
+  for (i = 0; i < SK.n; i++) {
+    if (!cm[SK.cat[i]]) continue;
+    if (f.brand && M.brands[SK.brand[i]] !== f.brand) continue;
+    m[i] = 1;
+  }
+  return m;
+}
+/* The scope button is NOT applied here: an outlet's own growth does not change
+   with scope, and the cards need both scopes. Scope is applied where rows are
+   listed or counted (buildOutlets, the degrowth card) and inside scanOutlet. */
+function outletMask() {
+  var m = new Uint8Array(OUTL.n), f = S.of, q = f.q.trim().toLowerCase(), i, r;
+  for (i = 0; i < OUTL.n; i++) {
+    r = OUTL.r[i];
+    if (f.format && r[2] !== f.format) continue;
+    if (f.odiv && r[3] !== f.odiv) continue;
+    if (f.zone && r[4] !== f.zone) continue;
+    if (f.cluster && r[5] !== f.cluster) continue;
+    if (f.leader && r[6] !== f.leader) continue;
+    if (f.zonal && r[7] !== f.zonal) continue;
+    if (f.area && r[8] !== f.area) continue;
+    if (q && r[1].toLowerCase().indexOf(q) < 0 && r[0].toLowerCase().indexOf(q) < 0) continue;
+    m[i] = 1;
+  }
+  return m;
+}
+
+/* ---------- aggregation ----------
+   Every accumulator is a flat Float64Array of 8 values per key:
+   0 sales TY 1 sales LY 2 GPV TY 3 GPV LY 4 FF TY 5 FF LY 6 qty TY 7 qty LY */
+function zeros(k) { return new Float64Array(k * 8); }
+function addInto(dst, base, src, sBase) {
+  for (var i = 0; i < 8; i++) dst[base + i] += src[sBase + i];
+}
+function totalsOf(a, base) {
+  return { s1: a[base], s0: a[base + 1], g1: a[base + 2], g0: a[base + 3],
+           f1: a[base + 4], f0: a[base + 5], q1: a[base + 6], q0: a[base + 7] };
+}
+
+/* An article search is answered from whole-period article totals, rolled up
+   onto the same keys the day-wise views use. There is no day series. */
+function scanArticles(smask) {
+  var q = S.pf.q.trim().toLowerCase(), nD = M.days.length;
+  var perSku = zeros(SK.n), perDay = zeros(nD);
+  var totAll = new Float64Array(8), totSame = new Float64Array(8);
+  var same = S.scope === 'same', src = same ? ART.v.same : ART.v.all, i, c, b, p;
+  for (i = 0; i < ART.n; i++) {
+    p = ART.pseudo[i];
+    if (p < 0 || !smask[p]) continue;
+    if (q && !articleMatch(i, q)) continue;
+    b = i * 8;
+    for (c = 0; c < 8; c++) {
+      totAll[c] += ART.v.all[b + c];
+      totSame[c] += ART.v.same[b + c];
+      perSku[p * 8 + c] += src[b + c];
+    }
+  }
+  return { perSku: perSku, perDay: perDay, totAll: totAll, totSame: totSame,
+           tot: same ? totSame : totAll, periodOnly: true };
+}
+
+/* SKU payload scan: per SKU, per day, and both scopes' grand totals. */
+function scanSku(smask) {
+  if (S.pf.q.trim()) return scanArticles(smask);
+  var nD = M.days.length, from = S.from, to = S.to;
+  var perSku = zeros(SK.n), perDay = zeros(nD);
+  var totAll = new Float64Array(8), totSame = new Float64Array(8);
+  var want = S.scope === 'same' ? 1 : 0;
+  var col = SKU.col, si = SKU.s, di = SKU.d, sc = SKU.sc, n = SKU.n, i, c, d, s, b;
+  for (i = 0; i < n; i++) {
+    d = di[i];
+    if (d < from || d > to) continue;
+    s = si[i];
+    if (!smask[s]) continue;
+    var scope = sc[i];
+    var t = scope === 1 ? totSame : totAll;
+    for (c = 0; c < 8; c++) t[c] += col[c][i];
+    if (scope !== want) continue;
+    b = s * 8;
+    for (c = 0; c < 8; c++) { perSku[b + c] += col[c][i]; perDay[d * 8 + c] += col[c][i]; }
+  }
+  return { perSku: perSku, perDay: perDay, totAll: totAll, totSame: totSame,
+           tot: want === 1 ? totSame : totAll };
+}
+
+/* Outlet payload scan: per outlet, per category, per day, both scopes. */
+function scanOutlet(cmask, omask) {
+  var from = S.from, to = S.to, nD = M.days.length;
+  var col = OUT.col, oi = OUT.o, ci = OUT.c, di = OUT.d, n = OUT.n;
+  var i, c, d, o, cat, b;
+
+  // pass 1 - outlet totals (needed before a Result filter can be applied)
+  var perOut = zeros(OUTL.n);
+  for (i = 0; i < n; i++) {
+    d = di[i];
+    if (d < from || d > to) continue;
+    cat = ci[i];
+    if (!cmask[cat]) continue;
+    o = oi[i];
+    if (!omask[o]) continue;
+    b = o * 8;
+    for (c = 0; c < 8; c++) perOut[b + c] += col[c][i];
+  }
+
+  var keep = omask;
+  if (S.of.result) {
+    keep = new Uint8Array(OUTL.n);
+    for (o = 0; o < OUTL.n; o++) {
+      if (!omask[o]) continue;
+      var diff = perOut[o * 8] - perOut[o * 8 + 1];
+      if (S.of.result === 'down' ? diff < 0 : diff > 0) keep[o] = 1;
+      else { for (c = 0; c < 8; c++) perOut[o * 8 + c] = 0; }
+    }
+  }
+
+  // perCat and perDay follow the scope button; the two growth cards need both
+  // scopes, so totals are split by the outlet's same-store flag either way.
+  var perCat = zeros(CAT.n), perDay = zeros(nD);
+  var totAll = new Float64Array(8), totSame = new Float64Array(8);
+  var sameOnly = S.scope === 'same';
+  for (i = 0; i < n; i++) {
+    d = di[i];
+    if (d < from || d > to) continue;
+    cat = ci[i];
+    if (!cmask[cat]) continue;
+    o = oi[i];
+    if (!keep[o]) continue;
+    var isSS = OUTL.ss[o];
+    b = cat * 8;
+    for (c = 0; c < 8; c++) {
+      var v = col[c][i];
+      totAll[c] += v;
+      if (isSS) totSame[c] += v;
+      if (sameOnly && !isSS) continue;
+      perCat[b + c] += v; perDay[d * 8 + c] += v;
+    }
+  }
+  return { perOut: perOut, perCat: perCat, perDay: perDay, keep: keep,
+           totAll: totAll, totSame: totSame,
+           tot: sameOnly ? totSame : totAll };
+}
+
+/* Targets: day x category, all-store scope only. */
+function scanTarget(cmask) {
+  var per = {}, totS = 0, totG = 0, i, r;
+  for (i = 0; i < TGT.length; i++) {
+    r = TGT[i];
+    if (r[0] < S.from || r[0] > S.to) continue;
+    if (!cmask[r[1]]) continue;
+    var k = r[1];
+    if (!per[k]) per[k] = [0, 0];
+    per[k][0] += r[2]; per[k][1] += r[3];
+    totS += r[2]; totG += r[3];
+  }
+  return { per: per, sales: totS, gpv: totG };
+}
+function targetsUsable() {
+  return !outletFiltered() && !skuLevelFilter() &&
+         (M.targetScope !== 'ALLSTORE_ONLY' || S.scope === 'all');
+}
+
+/* Top 90% of Category 3 by this-year sales, within the current filter. */
+function top90Set(perCatSales) {
+  var rows = [], i;
+  for (i in perCatSales) if (perCatSales[i] > 0) rows.push([i, perCatSales[i]]);
+  rows.sort(function (a, b) { return b[1] - a[1]; });
+  var total = rows.reduce(function (s, r) { return s + r[1]; }, 0);
+  var run = 0, keep = {};
+  for (i = 0; i < rows.length; i++) {
+    keep[rows[i][0]] = 1;
+    run += rows[i][1];
+    if (run >= total * 0.9) break;
+  }
+  return keep;
+}
+
+/* The target card always reads all-store actuals against the chain target,
+   whichever scope button is on; the table columns are stricter. */
+function targetCardUsable() {
+  return !outletFiltered() && !skuLevelFilter();
+}
+
+
+/* =====================================================================
+   View model + cards + chart
+   ===================================================================== */
+
+var V = null;   // cards, chart, summary  (top-90% never applies here)
+var T = null;   // tables
+
+function scanAll(cm, sm, om) {
+  var ofil = outletFiltered(), R = { ofil: ofil, cm: cm, sm: sm, om: om };
+  var ro = scanOutlet(cm, om);
+  R.perOut = ro.perOut; R.outKeep = ro.keep; R.perCatOut = ro.perCat;
+  if (ofil) {
+    R.perCat = ro.perCat; R.perDay = ro.perDay; R.tot = ro.tot;
+    R.totAll = ro.totAll; R.totSame = ro.totSame; R.perSku = null;
+  } else {
+    var rs = scanSku(sm);
+    R.perSku = rs.perSku; R.perDay = rs.perDay; R.tot = rs.tot;
+    R.periodOnly = !!rs.periodOnly;
+    R.totAll = rs.totAll; R.totSame = rs.totSame;
+    R.perCat = ro.perCat;
+  }
+  R.tgt = scanTarget(cm);
+  return R;
+}
+
+function catSalesMap(R) {
+  var m = {}, i;
+  if (R.perSku) {
+    for (i = 0; i < SK.n; i++) {
+      var v = R.perSku[i * 8];
+      if (v) { var c = SK.cat[i]; m[c] = (m[c] || 0) + v; }
+    }
+  } else {
+    for (i = 0; i < CAT.n; i++) if (R.perCat[i * 8]) m[i] = R.perCat[i * 8];
+  }
+  return m;
+}
+
+function compute() {
+  var cm = catMask(), sm = skuMask(cm), om = outletMask();
+  V = scanAll(cm, sm, om);
+  if (S.top90) {
+    var keep = top90Set(catSalesMap(V));
+    var cm2 = new Uint8Array(CAT.n);
+    for (var i = 0; i < CAT.n; i++) if (cm[i] && keep[i]) cm2[i] = 1;
+    T = scanAll(cm2, skuMask(cm2), om);
+    T.top90n = Object.keys(keep).length;
+  } else {
+    T = V;
+  }
+}
+
+/* ---------------------------------------------------------------- cards */
+function card(kls, k, v, vcls, sub) {
+  var c = el('div', 'card' + (kls ? ' ' + kls : ''));
+  c.appendChild(el('div', 'k', k));
+  var vv = el('div', 'v ' + (vcls || ''), v);
+  c.appendChild(vv);
+  if (sub) { var s = el('div', 'sub'); s.innerHTML = sub; c.appendChild(s); }
+  return c;
+}
+
+function renderCards() {
+  var box = $('cards');
+  box.innerHTML = '';
+  var a = V.totAll, s = V.totSame, t = V.tot;
+
+  var gs = growth(s[0], s[1]), ga = growth(a[0], a[1]);
+  box.appendChild(card('', 'Same store growth', pct(gs), cls(gs),
+    money(s[0]) + ' vs ' + money(s[1])));
+  box.appendChild(card('', 'All store growth', pct(ga), cls(ga),
+    money(a[0]) + ' vs ' + money(a[1])));
+
+  var g = growth(t[0], t[1]);
+  var basket1 = t[4] ? t[0] / t[4] : 0, basket0 = t[5] ? t[1] / t[5] : 0;
+  box.appendChild(card('', 'POS sales · ' + (S.scope === 'same' ? 'same store' : 'all store'),
+    money(t[0]), '',
+    'SPLY <b>' + money(t[1]) + '</b> · diff <b class="' + cls(g) + '">' +
+    money(t[0] - t[1]) + '</b> · <b class="' + cls(g) + '">' + pct(g) + '</b><br>' +
+    'Footfall <b>' + num(t[4]) + '</b> vs <b>' + num(t[5]) + '</b> · ' +
+    '<b class="' + cls(growth(t[4], t[5])) + '">' + pct(growth(t[4], t[5])) + '</b>'));
+
+  var gg = growth(t[2], t[3]);
+  var gp1 = t[0] ? t[2] / t[0] * 100 : null, gp0 = t[1] ? t[3] / t[1] * 100 : null;
+  box.appendChild(card('', 'GPV', money(t[2]), '',
+    'SPLY <b>' + money(t[3]) + '</b> · diff <b class="' + cls(gg) + '">' +
+    money(t[2] - t[3]) + '</b> · <b class="' + cls(gg) + '">' + pct(gg) + '</b><br>' +
+    'GP% <b>' + pct(gp1) + '</b> vs <b>' + pct(gp0) + '</b> · basket <b>' +
+    money(basket1) + '</b> vs <b>' + money(basket0) + '</b>'));
+
+  if (targetCardUsable() && V.tgt.sales > 0) {
+    var ach = V.tgt.sales ? a[0] / V.tgt.sales * 100 : null;
+    var achg = V.tgt.gpv ? a[2] / V.tgt.gpv * 100 : null;
+    box.appendChild(card('tgt', 'Sales target vs achievement · all store', pct(ach),
+      ach != null && ach < 100 ? 'down' : 'up',
+      'Target <b>' + money(V.tgt.sales) + '</b> · gap <b class="' +
+      cls(a[0] - V.tgt.sales) + '">' + money(a[0] - V.tgt.sales) + '</b><br>' +
+      'GPV target <b>' + money(V.tgt.gpv) + '</b> · ACH <b class="' +
+      (achg != null && achg < 100 ? 'down' : 'up') + '">' + pct(achg) + '</b>'));
+  } else {
+    var why = outletFiltered() ? 'No target is published by outlet.'
+      : skuLevelFilter() ? 'No target is published by brand or article.'
+      : 'No target is published for this selection.';
+    box.appendChild(card('tgt', 'Sales target vs achievement', '-', '', why));
+  }
+
+  // outlets in degrowth, named after the deepest category selected
+  var label = S.pf.cat3 || S.pf.cat1 || S.pf.div || S.pf.brand || S.pf.crp || '';
+  var down = 0, live = 0;
+  for (var i = 0; i < OUTL.n; i++) {
+    if (!V.outKeep[i] || (S.scope === 'same' && !OUTL.ss[i])) continue;
+    var b = i * 8;
+    if (V.perOut[b] === 0 && V.perOut[b + 1] === 0) continue;
+    live++;
+    if (V.perOut[b] - V.perOut[b + 1] < 0) down++;
+  }
+  box.appendChild(card('', 'Outlets in degrowth' + (label ? ' · ' + label : ''),
+    num(down), down ? 'down' : '',
+    'of <b>' + num(live) + '</b> outlets with sales · <b>' +
+    pct(live ? down / live * 100 : 0, 1) + '</b>'));
+}
+
+/* ------------------------------------------------------------ summary */
+function renderStrip() {
+  var st = $('strip'), i, b;
+  st.innerHTML = '';
+  function part(label, n, down) {
+    var d = el('div');
+    d.innerHTML = '<b>' + num(n) + '</b> ' + label + ' · <b class="' +
+      (down ? 'down' : '') + '">' + num(down) + '</b> in degrowth (' +
+      pct(n ? down / n * 100 : 0, 1) + ')';
+    st.appendChild(d);
+  }
+  if (T.perSku) {
+    var nS = 0, dS = 0, cat = {}, br = {};
+    for (i = 0; i < SK.n; i++) {
+      b = i * 8;
+      if (!T.perSku[b] && !T.perSku[b + 1]) continue;
+      nS++; if (T.perSku[b] - T.perSku[b + 1] < 0) dS++;
+      var c = SK.cat[i]; cat[c] = cat[c] || [0, 0];
+      cat[c][0] += T.perSku[b]; cat[c][1] += T.perSku[b + 1];
+      var r = SK.brand[i]; br[r] = br[r] || [0, 0];
+      br[r][0] += T.perSku[b]; br[r][1] += T.perSku[b + 1];
+    }
+    function countDown(obj) {
+      var n = 0, d = 0;
+      for (var k in obj) { n++; if (obj[k][0] - obj[k][1] < 0) d++; }
+      return [n, d];
+    }
+    var cc = countDown(cat), bb = countDown(br), ac = articleCount();
+    if (ac) part('articles', ac[0], ac[1]);
+    else st.appendChild(el('div', '', 'Article count needs the full period'));
+    part('Category 3 lines', cc[0], cc[1]);
+    part('brands', bb[0], bb[1]);
+  } else {
+    var nc = 0, dc = 0, crp = {};
+    for (i = 0; i < CAT.n; i++) {
+      b = i * 8;
+      if (!T.perCat[b] && !T.perCat[b + 1]) continue;
+      nc++; if (T.perCat[b] - T.perCat[b + 1] < 0) dc++;
+      var p = CAT.crp[i]; crp[p] = crp[p] || [0, 0];
+      crp[p][0] += T.perCat[b]; crp[p][1] += T.perCat[b + 1];
+    }
+    var pp = 0, pd = 0;
+    for (var k2 in crp) { pp++; if (crp[k2][0] - crp[k2][1] < 0) pd++; }
+    part('Category 3 lines', nc, dc);
+    part('responsible persons', pp, pd);
+    var d2 = el('div', '', 'Brand and article detail is not stored by outlet.');
+    st.appendChild(d2);
+  }
+  if (S.top90) {
+    var d3 = el('div');
+    d3.innerHTML = 'Tables show the top 90% of Category 3 only.';
+    st.appendChild(d3);
+  }
+}
+
+function articleCount() {
+  if (!fullRange()) return null;
+  var f = S.pf, q = f.q.trim().toLowerCase(), n = 0, d = 0;
+  var src = S.scope === 'same' ? ART.v.same : ART.v.all;
+  for (var i = 0; i < ART.n; i++) {
+    if (!T.cm[ART.cat[i]]) continue;
+    if (f.brand && M.brands[ART.brand[i]] !== f.brand) continue;
+    if (q && !articleMatch(i, q)) continue;
+    var b = i * 8;
+    if (!src[b] && !src[b + 1]) continue;
+    n++;
+    if (src[b] - src[b + 1] < 0) d++;
+  }
+  return [n, d];
+}
+
+/* -------------------------------------------------------------- chart */
+var SERIES = [
+  { k: 'sales', name: 'Sales growth %', color: '#1f5fbf' },
+  { k: 'gpv', name: 'GPV growth %', color: '#0f7a55' },
+  { k: 'ff', name: 'Footfall growth %', color: '#b3261e' },
+  { k: 'basket', name: 'Basket growth %', color: '#8a5a00' },
+  { k: 'gp', name: 'GP% this year', color: '#6b3fa0', axis: 'r' }
+];
+var seriesOff = {};
+
+function chartData() {
+  var nD = S.to - S.from + 1, pts = [], run = new Float64Array(8);
+  for (var i = 0; i < nD; i++) {
+    var d = S.from + i, b = d * 8, v = new Float64Array(8), c;
+    for (c = 0; c < 8; c++) { v[c] = V.perDay[b + c]; run[c] += v[c]; }
+    var u = S.chartMode === 'cum' ? run : v;
+    var bk1 = u[4] ? u[0] / u[4] : 0, bk0 = u[5] ? u[1] / u[5] : 0;
+    pts.push({
+      day: M.days[d],
+      sales: growth(u[0], u[1]), gpv: growth(u[2], u[3]),
+      ff: growth(u[4], u[5]), basket: bk0 ? (bk1 / bk0 - 1) * 100 : null,
+      gp: u[0] ? u[2] / u[0] * 100 : null
+    });
+  }
+  return pts;
+}
+
+function renderChart() {
+  var wrap = $('chartWrap');
+  wrap.innerHTML = '';
+  if (V && V.periodOnly) {
+    wrap.appendChild(el('div', 'empty', 'Article search reads whole-period totals, so there '
+      + 'is no day-by-day line. Clear the article search to see the chart.'));
+    $('legend').innerHTML = '';
+    return;
+  }
+  var pts = chartData();
+  var W = Math.max(520, wrap.clientWidth || 900), H = 300;
+  var padL = 48, padR = 48, padT = 14, padB = 26;
+  var iw = W - padL - padR, ih = H - padT - padB;
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+
+  function mk(t, at, txt) {
+    var e = document.createElementNS('http://www.w3.org/2000/svg', t);
+    for (var k in at) e.setAttribute(k, at[k]);
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  var live = SERIES.filter(function (s) { return !seriesOff[s.k]; });
+  var lv = [], rv = [];
+  pts.forEach(function (p) {
+    live.forEach(function (s) {
+      var v = p[s.k];
+      if (v == null || !isFinite(v)) return;
+      (s.axis === 'r' ? rv : lv).push(v);
+    });
+  });
+  function span(arr, fb) {
+    if (!arr.length) return fb;
+    var mn = Math.min.apply(null, arr), mx = Math.max.apply(null, arr);
+    if (mn === mx) { mn -= 1; mx += 1; }
+    var pad = (mx - mn) * 0.15;
+    return [mn - pad, mx + pad];
+  }
+  var L = span(lv, [-5, 5]), R = span(rv, [0, 25]);
+  var x = function (i) { return padL + (pts.length === 1 ? iw / 2 : iw * i / (pts.length - 1)); };
+  var yL = function (v) { return padT + ih - ih * (v - L[0]) / (L[1] - L[0]); };
+  var yR = function (v) { return padT + ih - ih * (v - R[0]) / (R[1] - R[0]); };
+
+  var ticks = 5, i, j;
+  for (i = 0; i <= ticks; i++) {
+    var vy = L[0] + (L[1] - L[0]) * i / ticks, py = yL(vy);
+    svg.appendChild(mk('line', { x1: padL, x2: W - padR, y1: py, y2: py, class: 'gridline' }));
+    svg.appendChild(mk('text', { x: padL - 6, y: py + 3.5, class: 'tick', 'text-anchor': 'end' },
+      vy.toFixed(1) + '%'));
+    var vr = R[0] + (R[1] - R[0]) * i / ticks;
+    svg.appendChild(mk('text', { x: W - padR + 6, y: py + 3.5, class: 'tick' },
+      vr.toFixed(1) + '%'));
+  }
+  var zeroY = (L[0] < 0 && L[1] > 0) ? yL(0) : null;
+  if (zeroY != null) svg.appendChild(mk('line',
+    { x1: padL, x2: W - padR, y1: zeroY, y2: zeroY, class: 'axis' }));
+
+  pts.forEach(function (p, i2) {
+    if (pts.length > 16 && i2 % 2) return;
+    svg.appendChild(mk('text', { x: x(i2), y: H - 8, class: 'tick', 'text-anchor': 'middle' },
+      p.day.n + ' ' + p.day.dow));
+  });
+
+  var labels = [];
+  live.forEach(function (s) {
+    var d = '', has = false;
+    pts.forEach(function (p, i3) {
+      var v = p[s.k];
+      if (v == null || !isFinite(v)) return;
+      var px = x(i3), py = s.axis === 'r' ? yR(v) : yL(v);
+      d += (has ? 'L' : 'M') + px.toFixed(1) + ' ' + py.toFixed(1);
+      has = true;
+      svg.appendChild(mk('circle', { cx: px, cy: py, r: 2.6, fill: s.color }));
+      if (S.labels) labels.push({ x: px, y: py, t: v.toFixed(1), c: s.color, i: i3 });
+    });
+    if (has) svg.appendChild(mk('path',
+      { d: d, fill: 'none', stroke: s.color, 'stroke-width': 1.9 }));
+  });
+
+  // data labels, pushed apart where they collide on the same x
+  if (S.labels) {
+    var byX = {};
+    labels.forEach(function (l) { (byX[l.i] = byX[l.i] || []).push(l); });
+    for (var k in byX) {
+      var grp = byX[k].sort(function (a, b) { return a.y - b.y; });
+      for (j = 1; j < grp.length; j++) {
+        if (grp[j].y - grp[j - 1].y < 12) grp[j].y = grp[j - 1].y + 12;
+      }
+      grp.forEach(function (l) {
+        svg.appendChild(mk('text',
+          { x: l.x, y: l.y - 6, class: 'dlabel', fill: l.c, 'text-anchor': 'middle' }, l.t));
+      });
+    }
+  }
+  wrap.appendChild(svg);
+
+  var lg = $('legend');
+  lg.innerHTML = '';
+  SERIES.forEach(function (s) {
+    var b = el('button', seriesOff[s.k] ? 'off' : '');
+    var sw = el('span', 'swatch'); sw.style.background = s.color;
+    b.appendChild(sw); b.appendChild(document.createTextNode(s.name));
+    b.onclick = function () { seriesOff[s.k] = !seriesOff[s.k]; renderChart(); };
+    lg.appendChild(b);
+  });
+  var mode = el('span', '', S.chartMode === 'cum' ? 'Cumulative to date' : 'Day by day');
+  mode.style.color = 'var(--muted)';
+  lg.appendChild(mode);
+}
+
+
+/* =====================================================================
+   Tables
+   ===================================================================== */
+
+var TABS = [
+  { k: 'div',    name: 'Article division', labels: ['Article division'] },
+  { k: 'cat1',   name: 'Category 1',       labels: ['Article division', 'Category 1'] },
+  { k: 'cat3',   name: 'Category 3',       labels: ['Article division', 'Category 1', 'Category 3'] },
+  { k: 'brand',  name: 'Brand',            labels: ['Brand'], skuOnly: true },
+  { k: 'sku',    name: 'Article',          labels: ['Article division', 'Category 1', 'Category 3', 'Brand', 'Code', 'Article'], skuOnly: true, noTarget: true },
+  { k: 'crp',    name: 'Responsible person', labels: ['Head', 'Responsible person'] },
+  { k: 'head',   name: 'Head',             labels: ['Head'] },
+  { k: 'odiv',   name: 'Outlet division',  labels: ['Outlet division'], outlet: true },
+  { k: 'area',   name: 'Area',             labels: ['Area'], outlet: true },
+  { k: 'leader', name: 'Leader',           labels: ['Leader'], outlet: true },
+  { k: 'zonal',  name: 'Zonal',            labels: ['Zonal'], outlet: true }
+];
+var FILTER_OF_LABEL = {
+  'Article division': ['pf', 'div'], 'Category 1': ['pf', 'cat1'],
+  'Category 3': ['pf', 'cat3'], 'Brand': ['pf', 'brand'],
+  'Responsible person': ['pf', 'crp'], 'Head': ['pf', 'head'],
+  'Outlet division': ['of', 'odiv'], 'Area': ['of', 'area'],
+  'Leader': ['of', 'leader'], 'Zonal': ['of', 'zonal'],
+  'Zone': ['of', 'zone'], 'Cluster': ['of', 'cluster'], 'Format': ['of', 'format']
+};
+var OUT_ATTRS = [
+  { k: 'odiv', i: 3, name: 'Outlet division' }, { k: 'area', i: 8, name: 'Area' },
+  { k: 'zone', i: 4, name: 'Zone' }, { k: 'cluster', i: 5, name: 'Cluster' },
+  { k: 'leader', i: 6, name: 'Leader' }, { k: 'zonal', i: 7, name: 'Zonal' },
+  { k: 'format', i: 2, name: 'Format' }
+];
+
+function valueCols(withTarget) {
+  var c = [
+    { id: 'sty', n: 'Sales', f: function (r) { return money(r.v[0]); }, s: function (r) { return r.v[0]; } },
+    { id: 'sly', n: 'Sales SPLY', f: function (r) { return money(r.v[1]); }, s: function (r) { return r.v[1]; } },
+    { id: 'sdf', n: 'Sales diff', f: function (r) { return money(r.v[0] - r.v[1]); }, s: function (r) { return r.v[0] - r.v[1]; }, col: true },
+    { id: 'sgr', n: 'Sales growth %', f: function (r) { return pct(growth(r.v[0], r.v[1])); }, s: function (r) { return growth(r.v[0], r.v[1]); }, col: true },
+    { id: 'gty', n: 'GPV', f: function (r) { return money(r.v[2]); }, s: function (r) { return r.v[2]; } },
+    { id: 'gly', n: 'GPV SPLY', f: function (r) { return money(r.v[3]); }, s: function (r) { return r.v[3]; } },
+    { id: 'gdf', n: 'GPV diff', f: function (r) { return money(r.v[2] - r.v[3]); }, s: function (r) { return r.v[2] - r.v[3]; }, col: true },
+    { id: 'ggr', n: 'GPV growth %', f: function (r) { return pct(growth(r.v[2], r.v[3])); }, s: function (r) { return growth(r.v[2], r.v[3]); }, col: true },
+    { id: 'gp1', n: 'GP %', f: function (r) { return pct(r.v[0] ? r.v[2] / r.v[0] * 100 : null); }, s: function (r) { return r.v[0] ? r.v[2] / r.v[0] * 100 : null; } },
+    { id: 'gp0', n: 'GP % SPLY', f: function (r) { return pct(r.v[1] ? r.v[3] / r.v[1] * 100 : null); }, s: function (r) { return r.v[1] ? r.v[3] / r.v[1] * 100 : null; } },
+    { id: 'fty', n: 'Footfall', f: function (r) { return num(r.v[4]); }, s: function (r) { return r.v[4]; } },
+    { id: 'fly', n: 'Footfall SPLY', f: function (r) { return num(r.v[5]); }, s: function (r) { return r.v[5]; } },
+    { id: 'fgr', n: 'Footfall growth %', f: function (r) { return pct(growth(r.v[4], r.v[5])); }, s: function (r) { return growth(r.v[4], r.v[5]); }, col: true },
+    { id: 'bty', n: 'Basket', f: function (r) { return r.v[4] ? money(r.v[0] / r.v[4]) : '-'; }, s: function (r) { return r.v[4] ? r.v[0] / r.v[4] : 0; } },
+    { id: 'bly', n: 'Basket SPLY', f: function (r) { return r.v[5] ? money(r.v[1] / r.v[5]) : '-'; }, s: function (r) { return r.v[5] ? r.v[1] / r.v[5] : 0; } },
+    { id: 'qty', n: 'Qty', f: function (r) { return qty(r.v[6]); }, s: function (r) { return r.v[6]; } },
+    { id: 'qly', n: 'Qty SPLY', f: function (r) { return qty(r.v[7]); }, s: function (r) { return r.v[7]; } },
+    { id: 'qgr', n: 'Qty growth %', f: function (r) { return pct(growth(r.v[6], r.v[7])); }, s: function (r) { return growth(r.v[6], r.v[7]); }, col: true }
+  ];
+  if (withTarget) {
+    c.push({ id: 'tgs', n: 'Sales target', f: function (r) { return r.t ? money(r.t[0]) : '-'; }, s: function (r) { return r.t ? r.t[0] : 0; } });
+    c.push({ id: 'ach', n: 'Sales ACH %', f: function (r) { return r.t && r.t[0] ? pct(r.v[0] / r.t[0] * 100) : '-'; }, s: function (r) { return r.t && r.t[0] ? r.v[0] / r.t[0] * 100 : null; }, col: true });
+    c.push({ id: 'tgg', n: 'GPV target', f: function (r) { return r.t ? money(r.t[1]) : '-'; }, s: function (r) { return r.t ? r.t[1] : 0; } });
+    c.push({ id: 'achg', n: 'GPV ACH %', f: function (r) { return r.t && r.t[1] ? pct(r.v[2] / r.t[1] * 100) : '-'; }, s: function (r) { return r.t && r.t[1] ? r.v[2] / r.t[1] * 100 : null; }, col: true });
+  }
+  return c;
+}
+
+/* ---------- row building ---------- */
+function newRow(labels) {
+  return { labels: labels, v: new Float64Array(8), t: null, attrs: null };
+}
+function addRow(map, key, labels) {
+  var r = map[key];
+  if (!r) { r = map[key] = newRow(labels); r._k = key; }
+  return r;
+}
+
+function buildArticles(tab) {
+  var rows = [], f = S.pf, q = f.q.trim().toLowerCase();
+  var src = S.scope === 'same' ? ART.v.same : ART.v.all;
+  if (fullRange()) {
+    for (var i = 0; i < ART.n; i++) {
+      if (!T.cm[ART.cat[i]]) continue;
+      if (f.brand && M.brands[ART.brand[i]] !== f.brand) continue;
+      if (q && !articleMatch(i, q)) continue;
+      var b = i * 8;
+      if (!src[b] && !src[b + 1]) continue;
+      var ci = ART.cat[i];
+      var r = newRow([CAT.div[ci], CAT.cat1[ci], CAT.cat3[ci], M.brands[ART.brand[i]],
+                      ART.code[i], ART.name[i]]);
+      for (var c = 0; c < 8; c++) r.v[c] = src[b + c];
+      rows.push(r);
+    }
+  }
+  return { rows: rows, cols: valueCols(false), labels: tab.labels, tab: tab,
+           needFull: !fullRange() };
+}
+
+function buildBreakdown() {
+  var tab = TABS.filter(function (t) { return t.k === S.tab; })[0] || TABS[0];
+  if (tab.k === 'sku') return buildArticles(tab);
+  var map = {}, i, b, r, k;
+  var useTargets = targetsUsable() && !tab.noTarget && !tab.outlet;
+
+  if (tab.outlet) {
+    for (i = 0; i < OUTL.n; i++) {
+      if (!T.outKeep[i] || (S.scope === 'same' && !OUTL.ss[i])) continue;
+      b = i * 8;
+      if (!T.perOut[b] && !T.perOut[b + 1]) continue;
+      var a = OUTL.r[i];
+      k = a[tab.k === 'odiv' ? 3 : tab.k === 'area' ? 8 : tab.k === 'leader' ? 6 : 7] || '(blank)';
+      r = addRow(map, k, [k]);
+      for (var c = 0; c < 8; c++) r.v[c] += T.perOut[b + c];
+    }
+  } else if (T.perSku && !tab.outlet) {
+    for (i = 0; i < SK.n; i++) {
+      b = i * 8;
+      if (!T.perSku[b] && !T.perSku[b + 1]) continue;
+      var ci = SK.cat[i];
+      k = catKeyFor(tab.k, ci, i);
+      if (k == null) continue;
+      r = addRow(map, k, labelsFor(tab.k, ci, i));
+      for (var c2 = 0; c2 < 8; c2++) r.v[c2] += T.perSku[b + c2];
+    }
+  } else {
+    for (i = 0; i < CAT.n; i++) {
+      b = i * 8;
+      if (!T.perCat[b] && !T.perCat[b + 1]) continue;
+      k = catKeyFor(tab.k, i, -1);
+      if (k == null) continue;
+      r = addRow(map, k, labelsFor(tab.k, i, -1));
+      for (var c3 = 0; c3 < 8; c3++) r.v[c3] += T.perCat[b + c3];
+    }
+  }
+
+  if (useTargets) {
+    for (var ci2 in T.tgt.per) {
+      var cidx = +ci2;
+      k = catKeyFor(tab.k, cidx, -1);
+      if (k == null) continue;
+      r = addRow(map, k, labelsFor(tab.k, cidx, -1));
+      r.t = r.t || [0, 0];
+      r.t[0] += T.tgt.per[ci2][0];
+      r.t[1] += T.tgt.per[ci2][1];
+    }
+  }
+
+  var rows = [];
+  for (k in map) rows.push(map[k]);
+  return { rows: rows, cols: valueCols(useTargets), labels: tab.labels, tab: tab };
+}
+
+function catKeyFor(tabKey, ci, si) {
+  switch (tabKey) {
+    case 'div': return CAT.div[ci];
+    case 'cat1': return CAT.div[ci] + SEP + CAT.cat1[ci];
+    case 'cat3': return CAT.div[ci] + SEP + CAT.cat1[ci] + SEP + CAT.cat3[ci];
+    case 'crp': return M.heads[CAT.head[ci]] + SEP + M.crps[CAT.crp[ci]];
+    case 'head': return M.heads[CAT.head[ci]];
+    case 'brand': return si < 0 ? null : 'b' + SK.brand[si];
+    case 'sku': return si < 0 ? null : 's' + si;
+  }
+  return null;
+}
+function labelsFor(tabKey, ci, si) {
+  switch (tabKey) {
+    case 'div': return [CAT.div[ci]];
+    case 'cat1': return [CAT.div[ci], CAT.cat1[ci]];
+    case 'cat3': return [CAT.div[ci], CAT.cat1[ci], CAT.cat3[ci]];
+    case 'crp': return [M.heads[CAT.head[ci]], M.crps[CAT.crp[ci]]];
+    case 'head': return [M.heads[CAT.head[ci]]];
+    case 'brand': return [M.brands[SK.brand[si]]];
+    case 'sku': return [CAT.div[ci], CAT.cat1[ci], CAT.cat3[ci],
+      M.brands[SK.brand[si]], SK.code[si], SK.name[si]];
+  }
+  return [''];
+}
+
+function buildOutlets() {
+  var rows = [], i, b;
+  for (i = 0; i < OUTL.n; i++) {
+    if (!T.outKeep[i] || (S.scope === 'same' && !OUTL.ss[i])) continue;
+    b = i * 8;
+    if (!T.perOut[b] && !T.perOut[b + 1]) continue;
+    var a = OUTL.r[i], r = newRow([a[1]]);
+    r.attrs = a;
+    for (var c = 0; c < 8; c++) r.v[c] = T.perOut[b + c];
+    rows.push(r);
+  }
+  return { rows: rows, cols: valueCols(false), labels: ['Outlet'], outlet: true };
+}
+
+/* ---------- rendering ---------- */
+var EXCEL_MAX = 1048576;
+/* Real months reach tens of thousands of article rows. Drawing every one
+   freezes the browser, so the table draws the first RENDER_MAX after sorting;
+   totals, subtotals and the CSV export still cover every row. */
+var RENDER_MAX = 2000;
+
+function renderTable(wrapId, model, st, subSelId) {
+  var wrap = $(wrapId);
+  wrap.innerHTML = '';
+  var cols = model.cols.filter(function (c) { return !st.hidden[c.id]; });
+  var labels = model.labels;
+
+  // subtotal options
+  var sub = $(subSelId);
+  var opts = [{ v: '', n: 'none' }];
+  if (model.outlet) {
+    OUT_ATTRS.forEach(function (a) { opts.push({ v: 'a:' + a.k, n: a.name }); });
+  } else {
+    for (var i = 0; i < labels.length - 1; i++) opts.push({ v: 'l:' + i, n: labels[i] });
+  }
+  var cur = st.sub;
+  if (!opts.some(function (o) { return o.v === cur; })) {
+    cur = st.sub = (opts.length > 1 && !model.outlet ? opts[opts.length - 1].v : '');
+  }
+  sub.innerHTML = '';
+  opts.forEach(function (o) {
+    var e = el('option', '', o.n); e.value = o.v;
+    if (o.v === cur) e.selected = true;
+    sub.appendChild(e);
+  });
+
+  if (!model.rows.length) {
+    wrap.appendChild(el('div', 'empty', 'No rows for this filter.'));
+    return;
+  }
+  var groups = 0;
+  if (cur) {
+    var seen = {};
+    model.rows.forEach(function (r) { seen[groupKey(r, cur)] = 1; });
+    groups = Object.keys(seen).length;
+  }
+  if (model.rows.length + groups + 2 > EXCEL_MAX) {
+    wrap.appendChild(el('div', 'err', 'This view has ' +
+      num(model.rows.length + groups + 2) + ' rows, over the Excel limit of ' +
+      num(EXCEL_MAX) + '. Narrow it with a filter, a shorter date range, or the ' +
+      'top 90% checkbox before exporting.'));
+    return;
+  }
+
+  // sort
+  var sortCol = st.sort ? cols.filter(function (c) { return c.id === st.sort.id; })[0] : null;
+  var rows = model.rows.slice();
+  if (sortCol) {
+    var dir = st.sort.dir === 'asc' ? 1 : -1;
+    rows.sort(function (a, b) {
+      var x = sortCol.s(a), y = sortCol.s(b);
+      if (x == null) return 1;
+      if (y == null) return -1;
+      return (x - y) * dir;
+    });
+  } else if (st.sortLabel != null) {
+    var li = st.sortLabel.i, d2 = st.sortLabel.dir === 'asc' ? 1 : -1;
+    rows.sort(function (a, b) {
+      return String(a.labels[li] || '').localeCompare(String(b.labels[li] || '')) * d2;
+    });
+  } else {
+    rows.sort(function (a, b) { return b.v[0] - a.v[0]; });
+  }
+  if (cur) {
+    var order = {}, seq = 0;
+    rows.forEach(function (r) {
+      var g = groupKey(r, cur);
+      if (!(g in order)) order[g] = seq++;
+    });
+    rows.sort(function (a, b) {
+      var d = order[groupKey(a, cur)] - order[groupKey(b, cur)];
+      return d;
+    });
+  }
+
+  var table = el('table');
+  var cg = el('colgroup');
+  var allCols = labels.map(function (l, i) { return { lbl: true, id: 'L' + i, n: l }; })
+    .concat(cols);
+  allCols.forEach(function (c) {
+    var col = document.createElement('col');
+    var w = st.width[c.id] || (c.lbl ? (c.n === 'Article' ? 260 : 150) : 108);
+    col.style.width = w + 'px';
+    cg.appendChild(col);
+  });
+  table.appendChild(cg);
+
+  var thead = el('thead'), tr = el('tr');
+  var left = 0;
+  allCols.forEach(function (c, ci) {
+    var th = el('th', c.lbl ? 'lbl froz' : '');
+    th.style.position = 'sticky';
+    if (c.lbl) { th.style.left = left + 'px'; left += (st.width[c.id] || (c.n === 'Article' ? 260 : 150)); }
+    var btn = el('button', 'sortbtn', c.n + sortMark(st, c));
+    btn.onclick = function () { toggleSort(st, c); redraw(); };
+    th.appendChild(btn);
+    if (!c.lbl) {
+      var x = el('button', 'x', '\u00d7');
+      x.title = 'Hide this column';
+      x.onclick = function (e) { e.stopPropagation(); st.hidden[c.id] = 1; redraw(); };
+      th.appendChild(x);
+    }
+    var rs = el('div', 'rs');
+    rs.onmousedown = function (e) { startResize(e, st, c.id, table, ci); };
+    rs.ondblclick = function () { delete st.width[c.id]; redraw(); };
+    th.appendChild(rs);
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr);
+  table.appendChild(thead);
+
+  var tb = el('tbody');
+  var total = newRow([]);
+  var gAcc = null, gKey = null, shown = 0, gShown = false;
+  function flush() {
+    if (!gAcc) return;
+    if (!gShown) { gAcc = null; return; }
+    var trs = el('tr', 'sub');
+    var td = el('td', 'lbl froz');
+    td.style.left = '0px';
+    td.colSpan = labels.length;
+    td.textContent = 'Subtotal · ' + gKey.split(SEP).join(' / ');
+    trs.appendChild(td);
+    cols.forEach(function (c) { trs.appendChild(el('td', '', c.f(gAcc))); });
+    tb.appendChild(trs);
+    gAcc = null;
+  }
+  rows.forEach(function (r) {
+    if (cur) {
+      var g = groupKey(r, cur);
+      if (g !== gKey) { flush(); gKey = g; gShown = false; }
+      if (!gAcc) { gAcc = newRow([]); gAcc.t = [0, 0]; }
+      for (var i2 = 0; i2 < 8; i2++) gAcc.v[i2] += r.v[i2];
+      if (r.t) { gAcc.t[0] += r.t[0]; gAcc.t[1] += r.t[1]; }
+    }
+    for (var i5 = 0; i5 < 8; i5++) total.v[i5] += r.v[i5];
+    if (r.t) { total.t = total.t || [0, 0]; total.t[0] += r.t[0]; total.t[1] += r.t[1]; }
+    if (shown >= RENDER_MAX) return;
+    shown++;
+    if (cur) gShown = true;
+    var trr = el('tr'), l2 = 0;
+    labels.forEach(function (lb, i3) {
+      var td = el('td', 'lbl froz');
+      td.style.left = l2 + 'px';
+      l2 += (st.width['L' + i3] || (lb === 'Article' ? 260 : 150));
+      var txt = r.labels[i3] == null ? '' : r.labels[i3];
+      var fk = FILTER_OF_LABEL[lb] || (lb === 'Outlet' ? ['of', 'q'] : null);
+      if (fk && txt) {
+        var sp = el('span', 'clk', txt);
+        sp.title = 'Filter by ' + txt;
+        sp.onclick = function () {
+          S[fk[0]][fk[1]] = (lb === 'Outlet' ? r.attrs[0] : txt);
+          syncInputs(); refresh();
+        };
+        td.appendChild(sp);
+      } else td.textContent = txt;
+      td.title = txt;
+      trr.appendChild(td);
+    });
+    cols.forEach(function (c) {
+      var td = el('td', '', c.f(r));
+      if (c.col) {
+        var sv = c.s(r);
+        if (sv != null) td.className = cls(c.id === 'ach' || c.id === 'achg' ? sv - 100 : sv);
+      }
+      trr.appendChild(td);
+    });
+    tb.appendChild(trr);
+  });
+  flush();
+  if (shown < rows.length) {
+    var trm = el('tr'), tdm = el('td', 'lbl');
+    tdm.colSpan = labels.length + cols.length;
+    tdm.style.textAlign = 'left';
+    tdm.style.color = 'var(--muted)';
+    tdm.textContent = 'Showing the first ' + num(shown) + ' of ' + num(rows.length) +
+      ' rows. The total below covers all of them; sort, filter or Export CSV for the rest.';
+    trm.appendChild(tdm);
+    tb.appendChild(trm);
+  }
+  table.appendChild(tb);
+
+  var tf = el('tfoot'), trt = el('tr', 'tot');
+  var tdt = el('td', 'lbl froz');
+  tdt.style.left = '0px';
+  tdt.colSpan = labels.length;
+  tdt.textContent = 'Total · ' + num(rows.length) + ' rows';
+  trt.appendChild(tdt);
+  cols.forEach(function (c) { trt.appendChild(el('td', '', c.f(total))); });
+  tf.appendChild(trt);
+  table.appendChild(tf);
+
+  wrap.appendChild(table);
+  st._model = model;
+  st._rows = rows;
+  st._cols = cols;
+  st._sub = cur;
+}
+
+function groupKey(r, cur) {
+  if (cur.charAt(0) === 'l') return String(r.labels[+cur.slice(2)] || '(blank)');
+  var k = cur.slice(2);
+  var a = OUT_ATTRS.filter(function (x) { return x.k === k; })[0];
+  return String((r.attrs && r.attrs[a.i]) || '(blank)');
+}
+function sortMark(st, c) {
+  if (c.lbl) {
+    if (st.sortLabel && st.sortLabel.id === c.id) return st.sortLabel.dir === 'asc' ? ' \u2191' : ' \u2193';
+    return '';
+  }
+  if (st.sort && st.sort.id === c.id) return st.sort.dir === 'asc' ? ' \u2191' : ' \u2193';
+  return '';
+}
+function toggleSort(st, c) {
+  if (c.lbl) {
+    var i = +c.id.slice(1);
+    if (st.sortLabel && st.sortLabel.id === c.id && st.sortLabel.dir === 'asc') st.sortLabel = { id: c.id, i: i, dir: 'desc' };
+    else st.sortLabel = { id: c.id, i: i, dir: 'asc' };
+    st.sort = null;
+  } else {
+    if (st.sort && st.sort.id === c.id && st.sort.dir === 'asc') st.sort = { id: c.id, dir: 'desc' };
+    else st.sort = { id: c.id, dir: 'asc' };
+    st.sortLabel = null;
+  }
+}
+function startResize(e, st, id, table, ci) {
+  e.preventDefault(); e.stopPropagation();
+  var x0 = e.clientX, col = table.querySelectorAll('col')[ci];
+  var w0 = col.getBoundingClientRect().width;
+  function mv(ev) {
+    var w = Math.max(48, w0 + ev.clientX - x0);
+    col.style.width = w + 'px';
+    st.width[id] = w;
+  }
+  function up() {
+    document.removeEventListener('mousemove', mv);
+    document.removeEventListener('mouseup', up);
+    redraw();
+  }
+  document.addEventListener('mousemove', mv);
+  document.addEventListener('mouseup', up);
+}
+
+/* ---------- CSV ---------- */
+function exportCsv(st, name) {
+  if (!st._rows) return;
+  var model = st._model, cols = st._cols, cur = st._sub;
+  var out = [], head = model.labels.concat(cols.map(function (c) { return c.n; }));
+  out.push(head);
+  var gAcc = null, gKey = null, total = newRow([]);
+  function flush() {
+    if (!gAcc) return;
+    var r = ['Subtotal · ' + gKey];
+    for (var i = 1; i < model.labels.length; i++) r.push('');
+    cols.forEach(function (c) { r.push(c.f(gAcc).replace(/,/g, '')); });
+    out.push(r);
+    gAcc = null;
+  }
+  st._rows.forEach(function (r) {
+    if (cur) {
+      var g = groupKey(r, cur);
+      if (g !== gKey) { flush(); gKey = g; }
+      if (!gAcc) { gAcc = newRow([]); gAcc.t = [0, 0]; }
+      for (var i = 0; i < 8; i++) gAcc.v[i] += r.v[i];
+      if (r.t) { gAcc.t[0] += r.t[0]; gAcc.t[1] += r.t[1]; }
+    }
+    var line = model.labels.map(function (_, i) { return r.labels[i] == null ? '' : r.labels[i]; });
+    cols.forEach(function (c) { line.push(c.f(r).replace(/,/g, '')); });
+    out.push(line);
+    for (var j = 0; j < 8; j++) total.v[j] += r.v[j];
+    if (r.t) { total.t = total.t || [0, 0]; total.t[0] += r.t[0]; total.t[1] += r.t[1]; }
+  });
+  flush();
+  var tl = ['Total'];
+  for (var i2 = 1; i2 < model.labels.length; i2++) tl.push('');
+  cols.forEach(function (c) { tl.push(c.f(total).replace(/,/g, '')); });
+  out.push(tl);
+
+  var csv = out.map(function (r) {
+    return r.map(function (v) {
+      v = String(v == null ? '' : v);
+      return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    }).join(',');
+  }).join('\r\n');
+  var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name + '_' + M.month + '_day' + (S.from + 1) + '-' + (S.to + 1) + '.csv';
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+
+/* =====================================================================
+   Filters, events, boot
+   ===================================================================== */
+
+function boot(msg, bad) {
+  var b = $('boot');
+  if (!b) return;
+  b.hidden = false;
+  b.innerHTML = '';
+  if (bad) {
+    var d = el('div', 'bad');
+    d.innerHTML = msg;
+    b.appendChild(d);
+  } else b.textContent = msg;
+}
+
+function fillSelect(id, values, current, blank) {
+  var s = $(id);
+  s.innerHTML = '';
+  var o0 = el('option', '', blank);
+  o0.value = '';
+  s.appendChild(o0);
+  values.forEach(function (v) {
+    var o = el('option', '', v);
+    o.value = v;
+    if (v === current) o.selected = true;
+    s.appendChild(o);
+  });
+  if (current && values.indexOf(current) < 0) {
+    var o2 = el('option', '', current + ' (not in this month)');
+    o2.value = current; o2.selected = true;
+    s.appendChild(o2);
+  }
+  s.className = current ? 'set' : '';
+}
+function uniqSorted(arr) {
+  var seen = {}, out = [];
+  arr.forEach(function (v) { if (v && !seen[v]) { seen[v] = 1; out.push(v); } });
+  return out.sort();
+}
+
+function populateFilters() {
+  var f = S.pf, i;
+  var divs = [], c1 = [], c3 = [], crps = [], heads = [];
+  for (i = 0; i < CAT.n; i++) {
+    divs.push(CAT.div[i]);
+    if (!f.div || CAT.div[i] === f.div) {
+      c1.push(CAT.cat1[i]);
+      if (!f.cat1 || CAT.cat1[i] === f.cat1) {
+        c3.push(CAT.cat3[i]);
+        if (!f.cat3 || CAT.cat3[i] === f.cat3) {
+          crps.push(M.crps[CAT.crp[i]]);
+          heads.push(M.heads[CAT.head[i]]);
+        }
+      }
+    }
+  }
+  fillSelect('fDiv', uniqSorted(divs), f.div, 'All divisions');
+  fillSelect('fCat1', uniqSorted(c1), f.cat1, 'All Category 1');
+  fillSelect('fCat3', uniqSorted(c3), f.cat3, 'All Category 3');
+  fillSelect('fHead', uniqSorted(heads), f.head, 'All heads');
+  fillSelect('fCrp', uniqSorted(crps), f.crp, 'All persons');
+
+  var cm = catMask(), brands = [];
+  for (i = 0; i < SK.n; i++) if (cm[SK.cat[i]]) brands.push(M.brands[SK.brand[i]]);
+  fillSelect('fBrand', uniqSorted(brands), f.brand, 'All brands');
+  $('fSku').value = f.q;
+  $('fSku').className = f.q ? 'set' : '';
+
+  var o = S.of, cols = { format: [], odiv: [], area: [], zone: [], cluster: [], leader: [], zonal: [] };
+  for (i = 0; i < OUTL.n; i++) {
+    var r = OUTL.r[i];
+    if (S.scope === 'same' && !r[9]) continue;
+    if (o.odiv && r[3] !== o.odiv) continue;
+    cols.format.push(r[2]); cols.odiv.push(r[3]); cols.zone.push(r[4]);
+    cols.cluster.push(r[5]); cols.leader.push(r[6]); cols.zonal.push(r[7]);
+    cols.area.push(r[8]);
+  }
+  fillSelect('oFormat', uniqSorted(cols.format), o.format, 'All formats');
+  fillSelect('oDiv', uniqSorted(cols.odiv), o.odiv, 'All outlet divisions');
+  fillSelect('oArea', uniqSorted(cols.area), o.area, 'All areas');
+  fillSelect('oZone', uniqSorted(cols.zone), o.zone, 'All zones');
+  fillSelect('oCluster', uniqSorted(cols.cluster), o.cluster, 'All clusters');
+  fillSelect('oLeader', uniqSorted(cols.leader), o.leader, 'All leaders');
+  fillSelect('oZonal', uniqSorted(cols.zonal), o.zonal, 'All zonals');
+  $('oResult').value = o.result;
+  $('oResult').className = o.result ? 'set' : '';
+  $('oSearch').value = o.q;
+  $('oSearch').className = o.q ? 'set' : '';
+
+  chips('prodChips', S.pf, {
+    div: 'Division', cat1: 'Category 1', cat3: 'Category 3', brand: 'Brand',
+    head: 'Head', crp: 'Person', q: 'Search'
+  });
+  chips('outChips', S.of, {
+    format: 'Format', odiv: 'Outlet division', area: 'Area', zone: 'Zone',
+    cluster: 'Cluster', leader: 'Leader', zonal: 'Zonal', result: 'Result', q: 'Search'
+  });
+}
+function chips(id, obj, names) {
+  var box = $(id);
+  box.innerHTML = '';
+  Object.keys(names).forEach(function (k) {
+    if (!obj[k]) return;
+    var c = el('span', 'chip');
+    c.appendChild(document.createTextNode(names[k] + ': ' + obj[k]));
+    var b = el('button', '', '\u00d7');
+    b.onclick = function () { obj[k] = ''; refresh(); };
+    c.appendChild(b);
+    box.appendChild(c);
+  });
+}
+function syncInputs() { populateFilters(); }
+
+/* ---------- tabs ---------- */
+function renderTabs() {
+  var box = $('catTabs');
+  box.innerHTML = '';
+  var lockSku = outletFiltered();
+  TABS.forEach(function (t) {
+    var b = el('button', S.tab === t.k ? 'on' : '', t.name);
+    if (t.skuOnly && lockSku) {
+      b.disabled = true;
+      b.title = 'Brand and article detail is not stored by outlet';
+    }
+    b.onclick = function () { S.tab = t.k; S.cat.sort = null; S.cat.sortLabel = null; renderTabs(); renderTables(); };
+    box.appendChild(b);
+  });
+}
+
+/* ---------- render ---------- */
+function renderTables() {
+  var tab = TABS.filter(function (t) { return t.k === S.tab; })[0];
+  if (tab && tab.skuOnly && outletFiltered()) { S.tab = 'cat3'; renderTabs(); }
+  $('catNote').innerHTML = '';
+  if (outletFiltered()) {
+    var n = el('div', 'note', 'Outlet filter is on, so the page is read from the '
+      + 'outlet payload: Category 3 is the deepest article grain, and brand and '
+      + 'article tabs are off. Targets are hidden because none is published by outlet.');
+    $('catNote').appendChild(n);
+  }
+  if (V.periodOnly) {
+    $('catNote').appendChild(el('div', 'note', 'Article search reads whole-period totals, '
+      + 'so the date range is held to the full period and the day-wise chart is off.'));
+  }
+  if (outletFiltered() && skuLevelFilter()) {
+    $('catNote').appendChild(el('div', 'note', 'Brand and article search do not apply while '
+      + 'an outlet filter is on: outlet data stops at Category 3, so the figures on this page '
+      + 'ignore them. Clear the outlet filters to use them.'));
+  }
+  var model = buildBreakdown();
+  if (model.needFull) {
+    var nb = el('div', 'note', 'Article detail is stored as whole-period totals, so it cannot '
+      + 'follow a partial date range. ');
+    var fb = el('button', 'btn', 'Show full period');
+    fb.onclick = function () { S.from = 0; S.to = M.days.length - 1; syncDates(); refresh(); };
+    nb.appendChild(fb);
+    $('catNote').appendChild(nb);
+  }
+  renderTable('catWrap', model, S.cat, 'catSub');
+
+  $('outNote').innerHTML = '';
+  if (skuLevelFilter()) {
+    $('outNote').appendChild(el('div', 'note',
+      'A brand or article filter is on. Outlet detail is stored at Category 3, '
+      + 'so it cannot follow that filter. Clear the brand and the search box to '
+      + 'see outlets.'));
+    $('outWrap').innerHTML = '';
+    $('outWrap').appendChild(el('div', 'empty', 'Outlet detail is off while a brand or article filter is on.'));
+  } else {
+    renderTable('outWrap', buildOutlets(), S.out, 'outSub');
+  }
+}
+function redraw() { renderTables(); }
+
+function renderAll() {
+  renderCards();
+  renderStrip();
+  renderChart();
+  renderTabs();
+  renderTables();
+  $('periodLbl').textContent = M.label + ' · day ' +
+    M.days[S.from].n + '\u2013' + M.days[S.to].n;
+  $('builtLbl').textContent = 'built ' + M.built + ' · ' + M.days.length + ' days available';
+}
+function refresh() {
+  if (S.pf.q.trim() && !outletFiltered() && !fullRange()) {
+    S.from = 0; S.to = M.days.length - 1; syncDates();
+  }
+  populateFilters();
+  compute();
+  renderAll();
+}
+
+/* ---------- date range ---------- */
+function syncDates() {
+  $('dFrom').value = M.days[S.from].d;
+  $('dTo').value = M.days[S.to].d;
+  $('dFrom').min = $('dTo').min = M.days[0].d;
+  $('dFrom').max = $('dTo').max = M.days[M.days.length - 1].d;
+}
+function dayOf(str) {
+  for (var i = 0; i < M.days.length; i++) if (M.days[i].d === str) return i;
+  return -1;
+}
+
+/* ---------- wiring ---------- */
+function wire() {
+  var pf = { fDiv: 'div', fCat1: 'cat1', fCat3: 'cat3', fBrand: 'brand', fHead: 'head', fCrp: 'crp' };
+  Object.keys(pf).forEach(function (id) {
+    $(id).onchange = function () {
+      S.pf[pf[id]] = this.value;
+      if (pf[id] === 'div') { S.pf.cat1 = ''; S.pf.cat3 = ''; }
+      if (pf[id] === 'cat1') S.pf.cat3 = '';
+      refresh();
+    };
+  });
+  var of = { oFormat: 'format', oDiv: 'odiv', oArea: 'area', oZone: 'zone', oCluster: 'cluster', oLeader: 'leader', oZonal: 'zonal', oResult: 'result' };
+  Object.keys(of).forEach(function (id) {
+    $(id).onchange = function () { S.of[of[id]] = this.value; refresh(); };
+  });
+  var tmr;
+  $('fSku').oninput = function () {
+    var v = this.value;
+    clearTimeout(tmr);
+    tmr = setTimeout(function () { S.pf.q = v; refresh(); }, 260);
+  };
+  var tmr2;
+  $('oSearch').oninput = function () {
+    var v = this.value;
+    clearTimeout(tmr2);
+    tmr2 = setTimeout(function () { S.of.q = v; refresh(); }, 260);
+  };
+  $('clearProd').onclick = function () {
+    S.pf = { div: '', cat1: '', cat3: '', brand: '', head: '', crp: '', q: '' };
+    refresh();
+  };
+  $('clearOut').onclick = function () {
+    S.of = { format: '', odiv: '', area: '', zone: '', cluster: '', leader: '', zonal: '', result: '', q: '' };
+    refresh();
+  };
+  $('top90').onchange = function () { S.top90 = this.checked; compute(); renderStrip(); renderTables(); };
+
+  document.querySelectorAll('#scopeSeg button').forEach(function (b) {
+    b.onclick = function () {
+      S.scope = b.dataset.scope;
+      document.querySelectorAll('#scopeSeg button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      refresh();
+    };
+  });
+  document.querySelectorAll('[data-cm]').forEach(function (b) {
+    b.onclick = function () {
+      S.chartMode = b.dataset.cm;
+      document.querySelectorAll('[data-cm]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      renderChart();
+    };
+  });
+  $('dlab').onchange = function () { S.labels = this.checked; renderChart(); };
+
+  $('dFrom').onchange = function () {
+    var i = dayOf(this.value);
+    if (i < 0) { syncDates(); return; }
+    S.from = Math.min(i, S.to);
+    syncDates(); refresh();
+  };
+  $('dTo').onchange = function () {
+    var i = dayOf(this.value);
+    if (i < 0) { syncDates(); return; }
+    S.to = Math.max(i, S.from);
+    syncDates(); refresh();
+  };
+  $('dFull').onclick = function () { S.from = 0; S.to = M.days.length - 1; syncDates(); refresh(); };
+  $('dLast').onclick = function () { S.from = S.to = M.days.length - 1; syncDates(); refresh(); };
+
+  $('catSub').onchange = function () { S.cat.sub = this.value; renderTables(); };
+  $('outSub').onchange = function () { S.out.sub = this.value; renderTables(); };
+  $('catCols').onclick = function () { S.cat.hidden = {}; S.cat.width = {}; renderTables(); };
+  $('outCols').onclick = function () { S.out.hidden = {}; S.out.width = {}; renderTables(); };
+  $('catCsv').onclick = function () { exportCsv(S.cat, 'breakdown_' + S.tab); };
+  $('outCsv').onclick = function () { exportCsv(S.out, 'outlets'); };
+
+  // sidebar
+  var dragging = false;
+  $('grip').onmousedown = function (e) {
+    dragging = true; e.preventDefault();
+    var move = function (ev) {
+      if (!dragging) return;
+      var w = Math.min(520, Math.max(170, ev.clientX));
+      document.documentElement.style.setProperty('--sidew', w + 'px');
+    };
+    var up = function () {
+      dragging = false;
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      renderChart();
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  };
+  $('sideCollapse').onclick = function () {
+    $('side').classList.add('hide');
+    showRestore();
+  };
+  $('sideReset').onclick = function () {
+    document.documentElement.style.setProperty('--sidew', '270px');
+    renderChart();
+  };
+  window.addEventListener('resize', function () { renderChart(); });
+}
+function showRestore() {
+  if ($('restoreSide')) return;
+  var b = el('button', 'btn', 'Show filters');
+  b.id = 'restoreSide';
+  b.style.cssText = 'position:fixed;left:8px;bottom:12px;z-index:50';
+  b.onclick = function () { $('side').classList.remove('hide'); b.remove(); renderChart(); };
+  document.body.appendChild(b);
+}
+
+/* ---------- months ---------- */
+function renderMonthButtons() {
+  var box = $('monthBtns');
+  box.innerHTML = '';
+  var seg = el('div', 'seg');
+  MONTHS.forEach(function (m) {
+    var b = el('button', m.key === S.month ? 'on' : '', m.label);
+    b.onclick = function () { switchMonth(m.key); };
+    seg.appendChild(b);
+  });
+  box.appendChild(seg);
+}
+async function switchMonth(key) {
+  if (key === S.month) return;
+  boot('Loading ' + key + '…');
+  $('shell').hidden = true;
+  try {
+    await loadMonth(key);
+  } catch (e) {
+    boot('<b>Could not load ' + key + '.</b><br>' + e.message, true);
+    return;
+  }
+  S.month = key;
+  S.from = 0; S.to = M.days.length - 1;
+  S.cat = { sort: null, hidden: {}, sub: '', width: {} };
+  S.out = { sort: null, hidden: {}, sub: '', width: {} };
+  $('boot').hidden = true;
+  $('shell').hidden = false;
+  renderMonthButtons();
+  syncDates();
+  refresh();
+}
+
+/* ---------- start ---------- */
+(async function start() {
+  if (!MONTHS.length) {
+    boot('<b>No data yet.</b><br><code>data/manifest.js</code> is missing or lists no '
+      + 'months. Put this month\'s files in <code>input/</code> and run '
+      + '<code>python build_dashboard_data.py</code>; it writes <code>data/</code> beside '
+      + 'this page. Then reload.', true);
+    return;
+  }
+  wire();
+  S.month = null;
+  await switchMonth(MONTHS[MONTHS.length - 1].key);
+})();
+
+</script>
+</body>
+</html>

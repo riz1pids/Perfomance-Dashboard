@@ -1,0 +1,12 @@
+# Inputs and built data never go into git: they are large, change monthly,
+# and hold company sales figures. The workflow publishes them to Pages instead.
+input/
+data/
+_site/
+
+__pycache__/
+*.pyc
+node_modules/
+package-lock.json
+.DS_Store
+~$*
